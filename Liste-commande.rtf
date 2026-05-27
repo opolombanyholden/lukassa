@@ -1,0 +1,537 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs26 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 cat > ~/Desktop/commandes_lukassa.txt << 'EOF'\
+# ============================================================\
+# LUKASSA - COMMANDES COMPL\'c8TES D'INSTALLATION\
+# Chemin du projet : /Users/hom/MacBook-Pro-de-HOM/lukassa\
+# Date : 26 Mai 2026\
+# ============================================================\
+\
+# ============================================================\
+# PR\'c9REQUIS - V\'c9RIFICATION DES INSTALLATIONS\
+# ============================================================\
+\
+# V\'e9rifier PHP\
+php --version\
+\
+# V\'e9rifier Composer\
+composer --version\
+\
+# V\'e9rifier Node.js\
+node --version\
+\
+# V\'e9rifier npm\
+npm --version\
+\
+# V\'e9rifier Flutter\
+flutter --version\
+\
+# V\'e9rifier Docker\
+docker --version\
+\
+# ============================================================\
+# \'c9TAPE 0 : CR\'c9ATION DE LA STRUCTURE RACINE\
+# ============================================================\
+\
+# Cr\'e9er le dossier racine du projet\
+cd ~/Documents\
+mkdir -p lukassa\
+cd lukassa\
+\
+# OU si vous \'eates d\'e9j\'e0 dans /Users/hom/MacBook-Pro-de-HOM/lukassa\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa\
+\
+# Cr\'e9er les sous-dossiers\
+mkdir -p backend web-portal mobile docker\
+\
+# V\'e9rifier la structure\
+ls -la\
+\
+# ============================================================\
+# \'c9TAPE 1 : BACKEND LARAVEL\
+# ============================================================\
+\
+# Se d\'e9placer dans le dossier backend\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/backend\
+\
+# Cr\'e9er le projet Laravel\
+composer create-project laravel/laravel . --prefer-dist\
+\
+# Installer les packages\
+composer require laravel/sanctum\
+composer require laravel/jetstream\
+composer require laravel/horizon\
+composer require predis/predis\
+composer require matanyadaev/laravel-eloquent-spatial\
+composer require barryvdh/laravel-debugbar --dev\
+composer require laravel/tinker\
+\
+# Installer Jetstream avec Inertia (SANS teams)\
+php artisan jetstream:install inertia\
+\
+# Installer les d\'e9pendances NPM\
+npm install\
+npm install bootstrap @popperjs/core sass\
+npm run build\
+\
+# ============================================================\
+# \'c9TAPE 2 : CONFIGURATION DU FICHIER .env\
+# ============================================================\
+\
+# Sauvegarder le .env par d\'e9faut\
+cp .env .env.backup\
+\
+# \'c9diter le fichier .env (remplacer le contenu)\
+cat > .env << 'ENV_CONTENT'\
+APP_NAME="LUKASSA API"\
+APP_ENV=local\
+APP_DEBUG=true\
+APP_URL=http://localhost:8000\
+APP_FRONTEND_URL=http://localhost:3000\
+\
+DB_CONNECTION=pgsql\
+DB_HOST=127.0.0.1\
+DB_PORT=5432\
+DB_DATABASE=lukassa\
+DB_USERNAME=postgres\
+DB_PASSWORD=postgres\
+\
+BROADCAST_DRIVER=log\
+CACHE_DRIVER=redis\
+QUEUE_CONNECTION=redis\
+SESSION_DRIVER=redis\
+\
+REDIS_HOST=127.0.0.1\
+REDIS_PASSWORD=null\
+REDIS_PORT=6379\
+\
+SANCTUM_STATEFUL_DOMAINS=localhost:8000,localhost:3000,localhost:8080\
+SESSION_DOMAIN=localhost\
+ENV_CONTENT\
+\
+# G\'e9n\'e9rer la cl\'e9 APP_KEY\
+php artisan key:generate\
+\
+# Installer Horizon\
+php artisan horizon:install\
+\
+# Cr\'e9er le lien de stockage\
+php artisan storage:link\
+\
+# Nettoyer le cache\
+php artisan config:clear\
+php artisan cache:clear\
+\
+# ============================================================\
+# \'c9TAPE 3 : BASE DE DONN\'c9ES (DOCKER)\
+# ============================================================\
+\
+# Se d\'e9placer dans le dossier docker\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/docker\
+\
+# Cr\'e9er le fichier docker-compose.yml\
+cat > docker-compose.yml << 'DOCKER_EOF'\
+version: '3.8'\
+\
+services:\
+  postgres:\
+    image: postgis/postgis:16-3.4\
+    container_name: lukassa_postgres\
+    environment:\
+      POSTGRES_DB: lukassa\
+      POSTGRES_USER: postgres\
+      POSTGRES_PASSWORD: postgres\
+    ports:\
+      - "5432:5432"\
+    volumes:\
+      - postgres_data:/var/lib/postgresql/data\
+    healthcheck:\
+      test: ["CMD-SHELL", "pg_isready -U postgres"]\
+      interval: 10s\
+      timeout: 5s\
+      retries: 5\
+\
+  redis:\
+    image: redis:7-alpine\
+    container_name: lukassa_redis\
+    ports:\
+      - "6379:6379"\
+    volumes:\
+      - redis_data:/data\
+    command: redis-server --appendonly yes\
+\
+volumes:\
+  postgres_data:\
+  redis_data:\
+DOCKER_EOF\
+\
+# D\'e9marrer les conteneurs\
+docker-compose up -d\
+\
+# V\'e9rifier que les conteneurs tournent\
+docker ps\
+\
+# Attendre que PostgreSQL soit pr\'eat\
+sleep 5\
+\
+# ============================================================\
+# \'c9TAPE 4 : CR\'c9ATION DES MIGRATIONS\
+# ============================================================\
+\
+# Revenir au dossier backend\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/backend\
+\
+# Cr\'e9er toutes les migrations\
+php artisan make:migration create_users_table\
+php artisan make:migration create_profiles_table\
+php artisan make:migration create_categories_table\
+php artisan make:migration create_services_table\
+php artisan make:migration create_provider_services_table\
+php artisan make:migration create_rfqs_table\
+php artisan make:migration create_bids_table\
+php artisan make:migration create_orders_table\
+php artisan make:migration create_transactions_table\
+php artisan make:migration create_wallets_table\
+php artisan make:migration create_withdrawals_table\
+php artisan make:migration create_reviews_table\
+php artisan make:migration create_notifications_table\
+php artisan make:migration create_messages_table\
+php artisan make:migration create_disputes_table\
+php artisan make:migration create_geo_zones_table\
+php artisan make:migration create_subscriptions_table\
+php artisan make:migration create_jobs_table\
+php artisan make:migration create_failed_jobs_table\
+\
+# Lister les fichiers cr\'e9\'e9s\
+ls -la database/migrations/\
+\
+# V\'e9rifier la connexion \'e0 PostgreSQL\
+php artisan migrate:status\
+\
+# Ex\'e9cuter les migrations\
+php artisan migrate\
+\
+# En cas d'erreur, forcer le fresh\
+# php artisan migrate:fresh\
+\
+# ============================================================\
+# \'c9TAPE 5 : CR\'c9ATION DES MOD\'c8LES ET CONTROLLERS\
+# ============================================================\
+\
+# Cr\'e9er les mod\'e8les\
+php artisan make:model User\
+php artisan make:model Profile\
+php artisan make:model Category\
+php artisan make:model Service\
+php artisan make:model ProviderService\
+php artisan make:model Rfq\
+php artisan make:model Bid\
+php artisan make:model Order\
+php artisan make:model Transaction\
+php artisan make:model Wallet\
+php artisan make:model Withdrawal\
+php artisan make:model Review\
+php artisan make:model Notification\
+php artisan make:model Message\
+php artisan make:model Dispute\
+php artisan make:model GeoZone\
+php artisan make:model Subscription\
+\
+# Cr\'e9er les contr\'f4leurs API\
+php artisan make:controller API/AuthController\
+php artisan make:controller API/RfqController\
+php artisan make:controller API/BidController\
+php artisan make:controller API/OrderController\
+php artisan make:controller API/PaymentController\
+php artisan make:controller API/ProfileController\
+php artisan make:controller API/SearchController\
+php artisan make:controller API/NotificationController\
+php artisan make:controller API/MessageController\
+php artisan make:controller API/Admin/DashboardController\
+php artisan make:controller API/Admin/UserController\
+php artisan make:controller API/Admin/TransactionController\
+\
+# ============================================================\
+# \'c9TAPE 6 : CONFIGURATION DES ROUTES API\
+# ============================================================\
+\
+# Remplacer le contenu de routes/api.php\
+cat > routes/api.php << 'API_EOF'\
+<?php\
+\
+use Illuminate\\Support\\Facades\\Route;\
+use App\\Http\\Controllers\\API\\AuthController;\
+use App\\Http\\Controllers\\API\\RfqController;\
+use App\\Http\\Controllers\\API\\BidController;\
+use App\\Http\\Controllers\\API\\OrderController;\
+use App\\Http\\Controllers\\API\\PaymentController;\
+use App\\Http\\Controllers\\API\\SearchController;\
+use App\\Http\\Controllers\\API\\ProfileController;\
+\
+// Routes publiques\
+Route::post('/register', [AuthController::class, 'register']);\
+Route::post('/login', [AuthController::class, 'login']);\
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);\
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);\
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);\
+\
+// Routes publiques de d\'e9couverte\
+Route::get('/services', [SearchController::class, 'services']);\
+Route::get('/categories/tree', [SearchController::class, 'categoriesTree']);\
+Route::get('/providers/search', [SearchController::class, 'searchProviders']);\
+Route::get('/providers/\{id\}', [SearchController::class, 'providerProfile']);\
+\
+// Routes prot\'e9g\'e9es\
+Route::middleware('auth:sanctum')->group(function () \{\
+    Route::get('/user', [AuthController::class, 'user']);\
+    Route::post('/logout', [AuthController::class, 'logout']);\
+    Route::put('/profile', [ProfileController::class, 'update']);\
+    \
+    // Routes Client\
+    Route::prefix('client')->group(function () \{\
+        Route::post('/rfq', [RfqController::class, 'store']);\
+        Route::get('/rfqs', [RfqController::class, 'index']);\
+        Route::get('/rfqs/\{rfq\}/bids', [RfqController::class, 'bids']);\
+        Route::post('/rfqs/\{rfq\}/select/\{bid\}', [RfqController::class, 'selectBid']);\
+        Route::get('/orders', [OrderController::class, 'clientOrders']);\
+        Route::post('/orders/\{order\}/cancel', [OrderController::class, 'cancel']);\
+        Route::post('/orders/\{order\}/review', [OrderController::class, 'addReview']);\
+    \});\
+    \
+    // Routes Prestataire\
+    Route::prefix('provider')->group(function () \{\
+        Route::get('/services', [ProfileController::class, 'providerServices']);\
+        Route::post('/services', [ProfileController::class, 'addService']);\
+        Route::get('/rfqs/nearby', [RfqController::class, 'nearbyRfqs']);\
+        Route::post('/rfqs/\{rfq\}/bid', [BidController::class, 'store']);\
+        Route::get('/bids', [BidController::class, 'index']);\
+        Route::get('/orders', [OrderController::class, 'providerOrders']);\
+        Route::patch('/orders/\{order\}/status', [OrderController::class, 'updateStatus']);\
+    \});\
+    \
+    // Routes Paiements\
+    Route::prefix('payments')->group(function () \{\
+        Route::post('/order/\{order\}/initiate', [PaymentController::class, 'initiate']);\
+        Route::get('/order/\{order\}/status', [PaymentController::class, 'status']);\
+        Route::get('/methods', [PaymentController::class, 'methods']);\
+    \});\
+    \
+    Route::get('/wallet/balance', [PaymentController::class, 'walletBalance']);\
+    Route::post('/wallet/withdraw', [PaymentController::class, 'withdraw']);\
+\});\
+API_EOF\
+\
+# ============================================================\
+# \'c9TAPE 7 : APPLICATION WEB (NUXT.JS)\
+# ============================================================\
+\
+# Revenir \'e0 la racine\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa\
+\
+# Se d\'e9placer dans web-portal\
+cd web-portal\
+\
+# Cr\'e9er le projet Nuxt.js\
+npx nuxi@latest init . --package-manager npm\
+\
+# Installer les d\'e9pendances\
+npm install\
+\
+# Installer les modules suppl\'e9mentaires\
+npm install @pinia/nuxt @nuxtjs/tailwindcss axios @nuxtjs/google-fonts\
+\
+# Cr\'e9er la structure des dossiers\
+mkdir -p pages/dashboard/client pages/dashboard/prestataire\
+mkdir -p components/layout components/common\
+mkdir -p stores composables assets/css\
+\
+# Cr\'e9er le fichier de configuration Nuxt\
+cat > nuxt.config.ts << 'NUXT_EOF'\
+export default defineNuxtConfig(\{\
+  devtools: \{ enabled: true \},\
+  ssr: true,\
+  \
+  app: \{\
+    head: \{\
+      title: 'LUKASSA - Services en Afrique',\
+      meta: [\
+        \{ name: 'description', content: 'Plateforme de mise en relation de services en Afrique' \}\
+      ]\
+    \}\
+  \},\
+  \
+  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxtjs/google-fonts'],\
+  \
+  runtimeConfig: \{\
+    public: \{\
+      apiBase: process.env.API_BASE_URL || 'http://localhost:8000/api'\
+    \}\
+  \},\
+  \
+  css: ['~/assets/css/main.css'],\
+  \
+  nitro: \{\
+    preset: 'node-server'\
+  \}\
+\})\
+NUXT_EOF\
+\
+# Cr\'e9er le fichier CSS\
+cat > assets/css/main.css << 'CSS_EOF'\
+@tailwind base;\
+@tailwind components;\
+@tailwind utilities;\
+\
+body \{\
+  font-family: 'Poppins', sans-serif;\
+\}\
+CSS_EOF\
+\
+# ============================================================\
+# \'c9TAPE 8 : APPLICATION MOBILE (FLUTTER)\
+# ============================================================\
+\
+# Revenir \'e0 la racine\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa\
+\
+# Se d\'e9placer dans mobile\
+cd mobile\
+\
+# Cr\'e9er le projet Flutter\
+flutter create --org com.yubile .\
+\
+# Ajouter les d\'e9pendances\
+cat >> pubspec.yaml << 'FLUTTER_EOF'\
+\
+  # Dependencies\
+  dio: ^5.3.0\
+  retrofit: ^4.0.0\
+  riverpod: ^2.4.0\
+  flutter_riverpod: ^2.4.0\
+  geolocator: ^10.0.0\
+  google_maps_flutter: ^2.5.0\
+  flutter_secure_storage: ^9.0.0\
+  shared_preferences: ^2.2.0\
+  cached_network_image: ^3.3.0\
+\
+dev_dependencies:\
+  build_runner: ^2.4.0\
+  retrofit_generator: ^7.0.0\
+FLUTTER_EOF\
+\
+# Installer les packages\
+flutter pub get\
+\
+# Cr\'e9er la structure des dossiers\
+mkdir -p lib/models lib/services lib/providers lib/screens lib/widgets lib/utils lib/constants\
+mkdir -p assets/images assets/icons\
+\
+# ============================================================\
+# \'c9TAPE 9 : SCRIPTS DE LANCEMENT\
+# ============================================================\
+\
+# Revenir \'e0 la racine\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa\
+\
+# Cr\'e9er le script de d\'e9marrage\
+cat > start.sh << 'START_EOF'\
+#!/bin/bash\
+\
+echo "\uc0\u55357 \u56960  LUKASSA - D\'e9marrage des services"\
+\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/docker\
+docker-compose up -d\
+cd ..\
+\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/backend\
+php artisan migrate --force 2>/dev/null\
+php artisan horizon &\
+php artisan serve --port=8000 &\
+cd ..\
+\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/web-portal\
+npm run dev -- --port=3000 &\
+cd ..\
+\
+echo "\uc0\u9989  LUKASSA d\'e9marr\'e9"\
+echo "\uc0\u55357 \u56525  API: http://localhost:8000"\
+echo "\uc0\u55357 \u56525  Web: http://localhost:3000"\
+echo "\uc0\u55357 \u56525  Mobile: flutter run dans mobile/"\
+START_EOF\
+\
+# Cr\'e9er le script d'arr\'eat\
+cat > stop.sh << 'STOP_EOF'\
+#!/bin/bash\
+echo "\uc0\u55357 \u57041  Arr\'eat de LUKASSA..."\
+pkill -f "php artisan serve"\
+pkill -f "php artisan horizon"\
+pkill -f "npm run dev"\
+pkill -f "flutter run"\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/docker && docker-compose down\
+echo "\uc0\u9989  Arr\'eat termin\'e9"\
+STOP_EOF\
+\
+# Rendre les scripts ex\'e9cutables\
+chmod +x start.sh stop.sh\
+\
+# ============================================================\
+# \'c9TAPE 10 : LANCEMENT DE TOUTE LA PLATEFORME\
+# ============================================================\
+\
+# Depuis la racine du projet\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa\
+\
+# Lancer tous les services\
+./start.sh\
+\
+# ============================================================\
+# COMMANDES DE V\'c9RIFICATION\
+# ============================================================\
+\
+# V\'e9rifier que les conteneurs Docker tournent\
+docker ps\
+\
+# V\'e9rifier que l'API r\'e9pond\
+curl http://localhost:8000/api/services\
+\
+# V\'e9rifier que le site web est accessible\
+curl -I http://localhost:3000\
+\
+# Voir les processus\
+ps aux | grep -E "(php|npm|flutter|docker)"\
+\
+# Voir les logs Laravel\
+tail -f /Users/hom/MacBook-Pro-de-HOM/lukassa/backend/storage/logs/laravel.log\
+\
+# ============================================================\
+# COMMANDES UTILITAIRES\
+# ============================================================\
+\
+# R\'e9initialiser compl\'e8tement la base de donn\'e9es\
+cd /Users/hom/MacBook-Pro-de-HOM/lukassa/backend\
+php artisan migrate:fresh --seed\
+\
+# Nettoyer le cache Laravel\
+php artisan cache:clear\
+php artisan config:clear\
+php artisan view:clear\
+php artisan route:clear\
+\
+# Red\'e9marrer les queues\
+php artisan queue:restart\
+\
+# Tester l'envoi de notification push\
+php artisan tinker\
+>>> Notification::send($user, new TestNotification());\
+\
+# ============================================================\
+# FIN DU DOCUMENT\
+# ============================================================\
+EOF}

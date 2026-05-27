@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LUKASSA - Conception Technique Détaillée v2.0 | Architecture Web & Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Calibri', 'Georgia', serif;
+            background-color: #eef2f8;
+            padding: 40px 24px;
+            color: #1a2c3e;
+            line-height: 1.5;
+        }
+
+        .document {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.1);
+            border-radius: 18px;
+            padding: 48px 56px;
+            transition: all 0.2s;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .document {
+                box-shadow: none;
+                padding: 0.6in;
+                max-width: 100%;
+                border-radius: 0;
+            }
+            .btn-print, .print-only-hide {
+                display: none;
+            }
+            h2, h3, h4, thead {
+                page-break-after: avoid;
+            }
+            table, pre, .code-block, .badge, .architecture-schema {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* Bouton d'impression / téléchargement */
+        .btn-print {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: #1e6f9f;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+        .btn-print:hover {
+            background: #0a4b6e;
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 36px;
+            background: linear-gradient(135deg, #0a2b3e, #1e6f9f);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            border-left: 6px solid #1e6f9f;
+            padding-left: 24px;
+            margin-bottom: 16px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: #2c5a74;
+            margin-bottom: 32px;
+            font-size: 16px;
+            border-bottom: 2px solid #e2edf7;
+            padding-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            color: #0f4c5f;
+            border-left: 5px solid #1e6f9f;
+            padding-left: 20px;
+            background: #f0f6fc;
+            padding: 12px 20px;
+            border-radius: 0 16px 16px 0;
+        }
+
+        h3 {
+            font-size: 22px;
+            margin: 28px 0 14px 0;
+            color: #1e5a76;
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: 18px;
+            margin: 20px 0 8px;
+            color: #2c6e8f;
+        }
+
+        p {
+            margin-bottom: 14px;
+            text-align: justify;
+        }
+
+        .badge {
+            background: #eef2fa;
+            padding: 18px 24px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border-left: 6px solid #1e6f9f;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 22px 0;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background-color: #1e6f9f;
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            border: 1px solid #dce5ef;
+            padding: 8px 12px;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafdff;
+        }
+
+        .code-block {
+            background: #1e2a36;
+            color: #eef4ff;
+            padding: 18px 22px;
+            border-radius: 14px;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .architecture-schema {
+            background: #f8fafc;
+            border: 1px solid #cbdde9;
+            border-radius: 20px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        ul, ol {
+            margin: 12px 0 16px 30px;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        hr {
+            margin: 32px 0;
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, #cbdde9, transparent);
+        }
+
+        footer {
+            margin-top: 48px;
+            text-align: center;
+            font-size: 12px;
+            color: #6f8eaa;
+            border-top: 1px solid #dce5ef;
+            padding-top: 24px;
+        }
+
+        .mono {
+            font-family: monospace;
+            background: #f0f4f9;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+
+        .grid-2 {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .card {
+            background: #f9fbfe;
+            border-radius: 20px;
+            padding: 16px 20px;
+            flex: 1;
+            border: 1px solid #e2edf4;
+        }
+    </style>
+</head>
+<body>
+<div class="document" id="lukassaConceptionDoc">
+    <h1>📱 LUKASSA – CONCEPTION TECHNIQUE DÉTAILLÉE v2.0</h1>
+    <div class="subtitle">
+        <strong>Architecture Web & Mobile unifiée</strong> – 26 Mai 2026<br>
+        Plateforme de mise en relation de services en Afrique | Version 2.0 – Prêt pour développement
+    </div>
+
+    <!-- SOMMAIRE -->
+    <h2>📚 SOMMAIRE</h2>
+    <ul>
+        <li>1. Vue d'ensemble de l'architecture (Web + Mobile + API)</li>
+        <li>2. Décisions Architecturales Majeures (ADR)</li>
+        <li>3. Modèle de Données Détaillé (21 tables)</li>
+        <li>4. Organisation du Code (Backend / Web / Mobile)</li>
+        <li>5. API Endpoints Complets (V1)</li>
+        <li>6. Spécification du Module RFQ (Appel d'offres anonyme)</li>
+        <li>7. Plan de Développement Agile (8 Sprints)</li>
+        <li>8. Recommandations pour un Démarrage Rapide</li>
+        <li>9. Checklist de lancement pour l'équipe</li>
+        <li>10. Annexes : Environnement, sécurité, métriques</li>
+    </ul>
+
+    <!-- 1. Architecture globale -->
+    <h2>1. 🧱 VUE D'ENSEMBLE DE L'ARCHITECTURE</h2>
+    <div class="architecture-schema">
+        ┌─────────────────────────────────────────────────────────────────┐<br>
+        │                         UTILISATEURS                            │<br>
+        ├─────────────────┬─────────────────┬─────────────────────────────┤<br>
+        │    NAVIGATEUR   │    NAVIGATEUR    │   APP MOBILE                │<br>
+        │    (Desktop)    │    (Mobile Web)  │   (Android/iOS)             │<br>
+        └────────┬────────┴────────┬─────────┴──────────────┬──────────────┘<br>
+                 ▼                  ▼                        ▼<br>
+        ┌─────────────────────────────────────────────────────────────────┐<br>
+        │                      COUCHE PRÉSENTATION                         │<br>
+        ├─────────────────────────┬───────────────────────────────────────┤<br>
+        │  Site Vitrine (Nuxt.js) │  Portail Web (Nuxt.js)                │<br>
+        │  - Pages publiques      │  - Dashboard client/presta            │<br>
+        │  - Backoffice (Inertia) │  - Messagerie, paiements              │<br>
+        ├─────────────────────────┼───────────────────────────────────────┤<br>
+        │  Application Mobile (Flutter)                                   │<br>
+        │  - Géolocalisation, notifications push                          │<br>
+        └─────────────────────────┬───────────────────────────────────────┘<br>
+                                  ▼<br>
+        ┌─────────────────────────────────────────────────────────────────┐<br>
+        │                   API GATEWAY / REVERSE PROXY (Nginx)           │<br>
+        └─────────────────────────┬───────────────────────────────────────┘<br>
+                                  ▼<br>
+        ┌─────────────────────────────────────────────────────────────────┐<br>
+        │            API REST (Laravel 11) + Sanctum + Horizon            │<br>
+        └───────────────┬─────────────────┬─────────────────┬─────────────┘<br>
+                        ▼                 ▼                 ▼<br>
+                ┌────────────┐    ┌────────────┐    ┌────────────┐<br>
+                │ PostgreSQL │    │   Redis    │    │   S3/MinIO │<br>
+                │  +PostGIS  │    │(Cache/Queue)│   │  (Files)   │<br>
+                └────────────┘    └────────────┘    └────────────┘
+    </div>
+    <p><strong>✅ Triple front :</strong> Site vitrine (SEO), Portail utilisateur web (SPA), Application mobile native (Flutter). Backend API unifié pour toutes les plateformes.</p>
+
+    <!-- 2. ADR -->
+    <h2>2. ⚙️ DÉCISIONS ARCHITECTURALES MAJEURES (ADR)</h2>
+    <table>
+        <thead><tr><th>Domaine</th><th>Décision</th><th>Justification</th></tr></thead>
+        <tbody>
+            <tr><td>API</td><td>RESTful versionnée (/api/v1/)</td><td>Simplicité, cache HTTP, maturité</td></tr>
+            <tr><td>Backend</td><td>Laravel 11 + Sanctum + Horizon</td><td>Sécurité, queues, monitoring</td></tr>
+            <tr><td>Base de données</td><td>PostgreSQL 16 + PostGIS</td><td>JSONB, géospatial (recherche par distance)</td></tr>
+            <tr><td>Site Vitrine & Portail Web</td><td>Nuxt.js 3 (SSR + SPA)</td><td>SEO essentiel, expérience utilisateur fluide</td></tr>
+            <tr><td>Backoffice</td><td>Laravel + Inertia + Vue.js</td><td>Rapidité de développement, stack homogène</td></tr>
+            <tr><td>Mobile</td><td>Flutter 3.x</td><td>Code unique Android/iOS, UI haute perf</td></tr>
+            <tr><td>Paiements</td><td>Pattern Adapter (Airtel, Moov, Stripe)</td><td>Intégration multiple & flexible</td></tr>
+            <tr><td>Notifications</td><td>FCM + Mail + SMS (multi-canal)</td><td>Robustesse, fiabilité</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 3. Modèle de données (aperçu) -->
+    <h2>3. 🗄️ MODÈLE DE DONNÉES DÉTAILLÉ (21 tables)</h2>
+    <div class="grid-2">
+        <div class="card">
+            <h4 style="margin-top:0;">Tables principales</h4>
+            <ul>
+                <li><span class="mono">users</span> (UUID, phone, type, status)</li>
+                <li><span class="mono">profiles</span> (user_id, coordonnées, rating)</li>
+                <li><span class="mono">categories</span> + <span class="mono">services</span></li>
+                <li><span class="mono">provider_services</span> (pivot prestataire/service)</li>
+                <li><span class="mono">rfqs</span> (appels d'offres anonymes, lat/lng)</li>
+                <li><span class="mono">bids</span> (propositions prestataires)</li>
+                <li><span class="mono">orders</span> (commande finale + statuts)</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4 style="margin-top:0;">Tables transactionnelles & support</h4>
+            <ul>
+                <li><span class="mono">transactions</span> (traçabilité paiements)</li>
+                <li><span class="mono">wallets</span> / <span class="mono">withdrawals</span></li>
+                <li><span class="mono">reviews</span> (notation, commentaires)</li>
+                <li><span class="mono">messages</span> (chat entre utilisateurs)</li>
+                <li><span class="mono">disputes, notifications, geo_zones, subscriptions</span></li>
+            </ul>
+        </div>
+    </div>
+    <div class="badge">
+        <strong>🔗 Relations clés :</strong> users → profiles → provider_services → services → categories.<br>
+        RFQ (client) ⇄ bids (prestataire) → orders → transactions / reviews. Toutes les migrations sont séquencées pour respecter les dépendances.
+    </div>
+
+    <!-- 4. Organisation du code -->
+    <h2>4. 📁 ORGANISATION DU CODE (DDD LIGHT)</h2>
+    <div class="code-block">
+        backend/                   # Laravel 11 (API + backoffice Inertia)
+        ├── app/Modules/{Auth,RFQ,Order,Payment,Geo,Notification}
+        ├── Domain/ValueObjects
+        ├── Infrastructure/
+        ├── database/migrations/
+        └── routes/api.php
+
+        web-portal/                # Nuxt.js 3 (vitrine + dashboard)
+        ├── pages/ (index, services, dashboard/client, dashboard/presta)
+        ├── components/, layouts/, stores/, public/
+        └── nuxt.config.ts
+
+        mobile/                    # Flutter 3
+        ├── lib/ (screens, services, providers, widgets)
+        ├── pubspec.yaml
+        └── assets/
+    </div>
+
+    <!-- 5. API endpoints -->
+    <h2>5. 🌐 API ENDPOINTS COMPLETS (V1)</h2>
+    <h3>🔐 Authentification</h3>
+    <table>
+        <tr><th>Méthode</th><th>Endpoint</th><th>Description</th></tr>
+        <tr><td>POST</td><td>/api/v1/auth/register</td><td>Inscription (phone, password, type)</td></tr>
+        <tr><td>POST</td><td>/api/v1/auth/verify-otp</td><td>Vérification code SMS</td></tr>
+        <tr><td>POST</td><td>/api/v1/auth/login</td><td>Connexion</td></tr>
+        <tr><td>GET</td><td>/api/v1/auth/user</td><td>Utilisateur courant</td></tr>
+    </table>
+    <h3>📦 Services & recherche (public)</h3>
+    <table>
+        <tr><td>GET</td><td>/api/v1/public/categories/tree</td><td>Arborescence catégories</td></tr>
+        <tr><td>GET</td><td>/api/v1/public/providers/search?lat=&lng=&service=</td><td>Recherche géolocalisée prestataires</td></tr>
+    </table>
+    <h3>👥 Clients & Prestataires</h3>
+    <p><span class="mono">POST /client/rfq</span> (anonyme), <span class="mono">GET /client/rfqs/{rfq}/bids</span>, <span class="mono">POST /rfq/{rfq}/select/{bid}</span><br>
+    <span class="mono">GET /provider/rfqs/nearby</span>, <span class="mono">POST /provider/rfqs/{rfq}/bid</span>, <span class="mono">PATCH /provider/orders/{order}/status</span></p>
+    <h3>💰 Paiement & Wallet</h3>
+    <p><span class="mono">POST /payments/order/{order}/initiate</span>, <span class="mono">POST /payments/webhook/{gateway}</span>, <span class="mono">GET /wallet/balance</span>, <span class="mono">POST /wallet/withdraw</span></p>
+
+    <!-- 6. Module RFQ -->
+    <h2>6. 🎯 SPÉCIFICATION DU MODULE RFQ (APPEL D'OFFRES ANONYME)</h2>
+    <div class="badge">
+        <strong>📌 Flux critique :</strong><br>
+        1️⃣ Client publie RFQ → anonymisé (client masqué).<br>
+        2️⃣ Queue job: recherche PostGIS des prestataires dans le rayon → notifications FCM.<br>
+        3️⃣ Prestataire consulte <span class="mono">/rfqs/nearby</span> → propose un prix/délai (<span class="mono">POST /bid</span>).<br>
+        4️⃣ Client reçoit les offres, compare profiles → sélectionne un bid.<br>
+        5️⃣ Génération de la commande (<span class="mono">order</span>) → paiement sécurisé.<br>
+        ✅ Protection contre la double sélection via verrouillage (Laravel lock).
+    </div>
+    <p><strong>Exemple payload RFQ (client) :</strong> <span class="mono">{ "service_id": "uuid", "description": "Réparation fuite eau", "lat": 0.4162, "lng": 9.4673, "preferred_date": "2026-06-10" }</span></p>
+
+    <!-- 7. Sprints -->
+    <h2>7. 🗓️ PLAN DE DÉVELOPPEMENT AGILE (8 sprints, 15 semaines)</h2>
+    <table>
+        <thead><tr><th>Sprint</th><th>Objectif</th><th>Backend</th><th>Web (Nuxt)</th><th>Mobile (Flutter)</th></tr></thead>
+        <tbody>
+            <tr><td>Sprint 0</td><td>Setup foundations</td><td>Laravel + PostGIS + Sanctum + Horizon</td><td>Nuxt, Tailwind, layouts</td><td>Flutter, Riverpod, Dio</td></tr>
+            <tr><td>Sprint 1</td><td>Auth & Profils</td><td>API register/login/OTP</td><td>Écrans login/register</td><td>Onboarding + auth</td></tr>
+            <tr><td>Sprint 2</td><td>Catégories & services</td><td>API catégories, search</td><td>Accueil, liste services</td><td>Home, catégories</td></tr>
+            <tr><td>Sprint 3</td><td>RFQ (annonce)</td><td>API RFQ, géoloc, push</td><td>Formulaire besoin, carte</td><td>Publier besoin + localisation</td></tr>
+            <tr><td>Sprint 4</td><td>Bids & sélection</td><td>API propositions, matching</td><td>Comparateur offres</td><td>Écran des bids</td></tr>
+            <tr><td>Sprint 5</td><td>Paiements intégrés</td><td>Adapters Mobile Money, webhooks</td><td>Checkout, historique</td><td>Paiement mobile</td></tr>
+            <tr><td>Sprint 6</td><td>Orders & messagerie</td><td>State machine order, chat API</td><td>Dashboard commandes, chat</td><td>Suivi commandes, chat</td></tr>
+            <tr><td>Sprint 7</td><td>Reviews & backoffice</td><td>API avis, admin dashboard</td><td>Backoffice Inertia, notation</td><td>Écran notation</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 8. Recommandations -->
+    <h2>8. 🚀 RECOMMANDATIONS POUR DÉMARRAGE RAPIDE</h2>
+    <ul>
+        <li><strong>Docker Compose</strong> : PostgreSQL (PostGIS), Redis, Nginx – reproductibilité immédiate.</li>
+        <li><strong>Variables d'environnement</strong> : API_URL, FCM keys, Mobile Money sandbox.</li>
+        <li><strong>Seeders & factories</strong> : génération de données de test (catégories, services, prestataires fictifs).</li>
+        <li><strong>Mock des paiements</strong> : <span class="mono">FakePaymentAdapter</span> en développement.</li>
+        <li><strong>CI/CD</strong> : GitHub Actions avec tests unitaires Laravel + Flutter.</li>
+    </ul>
+    <div class="code-block">
+        # Commandes clés après clonage<br>
+        cd backend && composer install && cp .env.example .env && php artisan key:generate<br>
+        php artisan migrate --seed && php artisan horizon & php artisan serve --port=8000<br>
+        cd ../web-portal && npm install && npm run dev -- --port=3000<br>
+        cd ../mobile && flutter pub get && flutter run
+    </div>
+
+    <!-- 9. Checklist -->
+    <h2>9. ✅ CHECKLIST DE LANCEMENT POUR L'ÉQUIPE</h2>
+    <div class="badge">
+        ✔️ Figma/Maquettes finalisées (dashboard, recherche, écran paiement)<br>
+        ✔️ Repositories backend/web/mobile créés (GitHub/GitLab)<br>
+        ✔️ Environnement Docker partagé (docker-compose avec API Gateway)<br>
+        ✔️ Configuration des environnements .env.dev / staging<br>
+        ✔️ Mise en place du rate limiting (API) + validation JWT<br>
+        ✔️ Définition des codes erreur métier (1000: solde, 1001: hors zone, etc.)<br>
+        ✔️ Tests de charge initiaux avec K6 (simulation RFQ)
+    </div>
+
+    <!-- 10. Annexes -->
+    <h2>10. 📎 ANNEXES : SÉCURITÉ, PERFORMANCES, MÉTRIQUES</h2>
+    <h3>🔒 Sécurité obligatoire</h3>
+    <ul>
+        <li>HTTPS + HSTS, JWT (Laravel Sanctum) avec expiration courte.</li>
+        <li>Protection XSS, CSRF, SQL injection (Eloquent préparé).</li>
+        <li>Audit trail sur les transactions et actions admin.</li>
+    </ul>
+    <h3>🎯 Métriques SLA & objectifs</h3>
+    <table>
+        <tr><th>Indicateur</th><th>Cible V1</th></tr>
+        <tr><td>Temps de réponse API (p95)</td><td>&lt; 500 ms</td></tr>
+        <tr><td>Chargement page web (LCP)</td><td>&lt; 2 secondes</td></tr>
+        <tr><td>Disponibilité (SLA)</td><td>99.5%</td></tr>
+        <tr><td>Utilisateurs simultanés supportés</td><td>10 000</td></tr>
+    </table>
+    <h3>📦 Exemple réponse API standard</h3>
+    <div class="code-block">
+        {<br>
+        &nbsp;&nbsp;"success": true,<br>
+        &nbsp;&nbsp;"data": { ... },<br>
+        &nbsp;&nbsp;"meta": { "timestamp": "2026-05-26T12:00:00Z", "version": "v1" }<br>
+        }
+    </div>
+
+    <hr>
+    <footer>
+        Document confidentiel – YUBILE TECHNOLOGIE – LUKASSA Architecture Web+Mobile v2.0 – 26 Mai 2026<br>
+        ✨ Conception prête pour développement : équipe backend, frontend web & mobile peuvent démarrer en parallèle.
+    </footer>
+</div>
+<button class="btn-print" onclick="window.print();">📄 Télécharger / Imprimer (PDF/Word)</button>
+<script>
+    console.log("Document conception LUKASSA v2.0 - prêt pour développement.");
+</script>
+</body>
+</html>
