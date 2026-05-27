@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Requests\Api\V1\VerifyOtpRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Responses\ApiResponse;
 use App\Models\Profile;
@@ -43,7 +45,25 @@ class AuthController extends Controller
         return ApiResponse::success($payload, 201);
     }
 
-    public function verifyOtp(Request $request) { abort(501); }
+    public function verifyOtp(VerifyOtpRequest $request, OtpService $otp)
+    {
+        $data = $request->validated();
+        $user = User::where('phone', $data['phone'])->first();
+
+        if (!$user) {
+            throw ApiException::otpInvalid();
+        }
+
+        $otp->verify($user, $data['otp'], 'verify_account');
+
+        $user->forceFill(['status' => 'active'])->save();
+        $user->load('profile');
+
+        return ApiResponse::success([
+            'user' => new UserResource($user),
+            'message' => 'Compte activé.',
+        ]);
+    }
     public function resendOtp(Request $request) { abort(501); }
     public function login(Request $request) { abort(501); }
     public function forgotPassword(Request $request) { abort(501); }
