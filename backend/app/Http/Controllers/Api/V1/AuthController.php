@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Requests\Api\V1\ResendOtpRequest;
 use App\Http\Requests\Api\V1\VerifyOtpRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Responses\ApiResponse;
@@ -64,7 +65,22 @@ class AuthController extends Controller
             'message' => 'Compte activé.',
         ]);
     }
-    public function resendOtp(Request $request) { abort(501); }
+    public function resendOtp(ResendOtpRequest $request, OtpService $otp)
+    {
+        $user = User::where('phone', $request->validated()['phone'])->first();
+
+        if ($user && $user->otp_type) {
+            $code = $otp->generateFor($user, $user->otp_type);
+            $payload = ['message' => 'OTP renvoyé.'];
+            if (config('otp.sender') === 'fake') {
+                $payload['_dev_otp'] = $code;
+            }
+            return ApiResponse::success($payload);
+        }
+
+        // Anti-leak : on retourne 200 même si user n'existe pas
+        return ApiResponse::success(['message' => 'OTP renvoyé.']);
+    }
     public function login(Request $request) { abort(501); }
     public function forgotPassword(Request $request) { abort(501); }
     public function resetPassword(Request $request) { abort(501); }
