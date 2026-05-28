@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Category;
+use App\Observers\CategoryObserver;
 use App\Services\Otp\FakeOtpSender;
 use App\Services\Otp\LogOtpSender;
 use App\Services\Otp\OtpSenderInterface;
@@ -30,6 +32,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Category::observe(CategoryObserver::class);
     }
 }

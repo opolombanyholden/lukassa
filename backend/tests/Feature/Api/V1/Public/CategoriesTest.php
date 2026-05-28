@@ -79,4 +79,14 @@ class CategoriesTest extends TestCase
         $this->getJson('/api/v1/public/categories/nonexistent/services')
             ->assertStatus(404);
     }
+
+    public function test_cache_invalidated_when_category_saved(): void
+    {
+        Category::factory()->create(['parent_id' => null]);
+        $this->getJson('/api/v1/public/categories/tree'); // populates cache
+        $this->assertTrue(Cache::has('categories:tree'));
+
+        Category::factory()->create(['parent_id' => null]);
+        $this->assertFalse(Cache::has('categories:tree'));
+    }
 }
