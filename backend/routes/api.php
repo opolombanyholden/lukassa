@@ -11,6 +11,8 @@ Route::prefix('v1')->group(function () {
         Route::get('categories', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'index']);
         Route::get('categories/tree', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'tree']);
         Route::get('categories/{category:slug}/services', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'services']);
+        Route::get('services', [\App\Http\Controllers\Api\V1\Public\ServiceController::class, 'index']);
+        Route::get('services/{service:slug}', [\App\Http\Controllers\Api\V1\Public\ServiceController::class, 'show']);
     });
 
     // Public auth endpoints
