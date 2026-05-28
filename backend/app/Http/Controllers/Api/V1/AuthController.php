@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResendOtpRequest;
+use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\VerifyOtpRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Responses\ApiResponse;
@@ -123,7 +124,22 @@ class AuthController extends Controller
 
         return ApiResponse::success(['message' => 'OTP envoyé pour réinitialisation.']);
     }
-    public function resetPassword(Request $request) { abort(501); }
+    public function resetPassword(ResetPasswordRequest $request, OtpService $otp)
+    {
+        $data = $request->validated();
+        $user = User::where('phone', $data['phone'])->first();
+
+        if (!$user) {
+            throw ApiException::otpInvalid();
+        }
+
+        $otp->verify($user, $data['otp'], 'reset_password');
+
+        $user->forceFill(['password' => $data['password']])->save();
+        $user->tokens()->delete();
+
+        return ApiResponse::success(['message' => 'Mot de passe réinitialisé.']);
+    }
     public function user(Request $request)
     {
         $user = $request->user()->load('profile');
