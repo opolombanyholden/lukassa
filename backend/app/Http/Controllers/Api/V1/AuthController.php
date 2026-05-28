@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResendOtpRequest;
@@ -107,7 +108,21 @@ class AuthController extends Controller
         }
         return ApiResponse::success(['user' => new UserResource($user)]);
     }
-    public function forgotPassword(Request $request) { abort(501); }
+    public function forgotPassword(ForgotPasswordRequest $request, OtpService $otp)
+    {
+        $user = User::where('phone', $request->validated()['phone'])->first();
+
+        if ($user) {
+            $code = $otp->generateFor($user, 'reset_password');
+            $payload = ['message' => 'OTP envoyé pour réinitialisation.'];
+            if (config('otp.sender') === 'fake') {
+                $payload['_dev_otp'] = $code;
+            }
+            return ApiResponse::success($payload);
+        }
+
+        return ApiResponse::success(['message' => 'OTP envoyé pour réinitialisation.']);
+    }
     public function resetPassword(Request $request) { abort(501); }
     public function user(Request $request)
     {
