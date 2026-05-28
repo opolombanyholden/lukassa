@@ -65,4 +65,19 @@ class ApiException extends \Exception
     {
         return new self('AUTH_007', 422, 'Type de compte invalide.');
     }
+
+    public static function accountUnauthorized(): self
+    {
+        return new self('AUTH_008', 403, 'Action réservée aux prestataires.');
+    }
+
+    public static function categoryNotFound(): self
+    {
+        return new self('CATALOG_002', 422, 'Catégorie introuvable.');
+    }
+
+    public static function serviceNotFound(): self
+    {
+        return new self('CATALOG_003', 422, 'Service introuvable.');
+    }
 }

@@ -44,4 +44,25 @@ class ApiExceptionTest extends TestCase
             $codes
         );
     }
+
+    public function test_account_unauthorized_factory(): void
+    {
+        $e = ApiException::accountUnauthorized();
+        $this->assertSame('AUTH_008', $e->errorCode);
+        $this->assertSame(403, $e->httpStatus);
+    }
+
+    public function test_category_not_found_factory(): void
+    {
+        $e = ApiException::categoryNotFound();
+        $this->assertSame('CATALOG_002', $e->errorCode);
+        $this->assertSame(422, $e->httpStatus);
+    }
+
+    public function test_service_not_found_factory(): void
+    {
+        $e = ApiException::serviceNotFound();
+        $this->assertSame('CATALOG_003', $e->errorCode);
+        $this->assertSame(422, $e->httpStatus);
+    }
 }
