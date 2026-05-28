@@ -13,6 +13,8 @@ Route::prefix('v1')->group(function () {
         Route::get('categories/{category:slug}/services', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'services']);
         Route::get('services', [\App\Http\Controllers\Api\V1\Public\ServiceController::class, 'index']);
         Route::get('services/{service:slug}', [\App\Http\Controllers\Api\V1\Public\ServiceController::class, 'show']);
+        Route::get('providers/search', [\App\Http\Controllers\Api\V1\Public\ProviderController::class, 'search']);
+        Route::get('providers/{id}', [\App\Http\Controllers\Api\V1\Public\ProviderController::class, 'show']);
     });
 
     // Public auth endpoints
