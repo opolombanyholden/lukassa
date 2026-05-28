@@ -109,6 +109,27 @@ class AuthController extends Controller
     }
     public function forgotPassword(Request $request) { abort(501); }
     public function resetPassword(Request $request) { abort(501); }
-    public function user(Request $request) { abort(501); }
-    public function logout(Request $request) { abort(501); }
+    public function user(Request $request)
+    {
+        $user = $request->user()->load('profile');
+        return ApiResponse::success((new UserResource($user))->toArray($request));
+    }
+
+    public function logout(Request $request)
+    {
+        $token = $request->user()->currentAccessToken();
+        if ($token && method_exists($token, 'delete')) {
+            $token->delete();
+            // Reset cached auth so a re-presented (now-revoked) token re-evaluates.
+            Auth::guard('sanctum')->forgetUser();
+        } else {
+            // stateful (web) : invalidate session
+            Auth::guard('web')->logout();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+        }
+        return ApiResponse::success(['message' => 'Déconnecté.']);
+    }
 }
