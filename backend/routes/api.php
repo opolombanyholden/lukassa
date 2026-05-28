@@ -31,5 +31,12 @@ Route::prefix('v1')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('profile',      [ProfileController::class, 'show']);
         Route::put('profile',      [ProfileController::class, 'update']);
+
+        Route::prefix('provider')->group(function () {
+            Route::get('services', [\App\Http\Controllers\Api\V1\Provider\ServiceController::class, 'index']);
+            Route::post('services', [\App\Http\Controllers\Api\V1\Provider\ServiceController::class, 'store']);
+            Route::put('services/{id}', [\App\Http\Controllers\Api\V1\Provider\ServiceController::class, 'update']);
+            Route::delete('services/{id}', [\App\Http\Controllers\Api\V1\Provider\ServiceController::class, 'destroy']);
+        });
     });
 });
