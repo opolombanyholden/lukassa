@@ -6,6 +6,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
+    // Public catalog endpoints
+    Route::prefix('public')->group(function () {
+        Route::get('categories', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'index']);
+        Route::get('categories/tree', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'tree']);
+        Route::get('categories/{category:slug}/services', [\App\Http\Controllers\Api\V1\Public\CategoryController::class, 'services']);
+    });
+
     // Public auth endpoints
     Route::post('auth/register',        [AuthController::class, 'register']);
     Route::post('auth/verify-otp',      [AuthController::class, 'verifyOtp']);
